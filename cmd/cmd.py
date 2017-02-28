@@ -634,8 +634,7 @@ def parse_args(cmd, argv, alias_argv=None):
         args = argv
 
     options, args = parser.parse_args(args)
-    opts = dict([(k, v) for k, v in options.__dict__.items() if
-                 v is not OptionParser.DEFAULT_VALUE])
+    opts = {k: v for k, v in options.__dict__.items() if v is not OptionParser.DEFAULT_VALUE}
     return args, opts
 
 
@@ -928,7 +927,7 @@ class CLI(object):
         if commands is None:
             commands = [sys._getframe(1).f_globals]
         elif isinstance(commands, (list, tuple)):
-            commands = dict([(c.name(), c) for c in commands])
+            commands = {c.name(): c for c in commands}
         if isinstance(commands, (dict, str, types.ModuleType)):
             commands = [commands]
 
