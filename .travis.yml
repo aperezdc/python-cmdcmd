@@ -1,19 +1,18 @@
 sudo: false
 language: python
+
 python:
-  - 3.4
   - 3.5
   - 3.6
+
 install:
   - pip install coverage coveralls
   - pip install -e '.[dev]'
+
+# TODO(aperez): Check whether we need any of the additional bits from e.g.
+# https://github.com/scikit-learn/scikit-learn/blob/53058619b571d8c9e517e40d36d825f07ceb5970/build_tools/travis/flake8_diff.sh
 script: |
-  # TODO(aperez): Check whether we need any of the additional bits from e.g.
-  # https://github.com/scikit-learn/scikit-learn/blob/53058619b571d8c9e517e40d36d825f07ceb5970/build_tools/travis/flake8_diff.sh
-  if [[ ${TRAVIS_PULL_REQUEST} = 'false' ]] ; then
-    flake8
-  else
-    flake8-diff
-  fi
   coverage run --include=cmd/* setup.py test
+  if [[ ${TRAVIS_PULL_REQUEST} = 'false' ]] ; then flake8 ; else flake8-diff ; fi
+
 after_success: coveralls
