@@ -51,7 +51,7 @@ class Lock(object):
         if not os.path.isdir(lockdir):
             os.mkdir(lockdir, 0o755)
         if not os.access(lockdir, os.W_OK):
-            raise ValueError("Directory %r not writable" % lockdir)
+            raise ValueError("Directory {!r} not writable".format(lockdir))
 
         self._lockfile = os.path.join(lockdir, name)
         self._fileno = None

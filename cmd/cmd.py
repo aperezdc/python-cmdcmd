@@ -131,9 +131,9 @@ class Option(object):
 
     def add_option(self, parser, short_name):
         """Add this option to an optparse parser."""
-        option_strings = ["--%s" % self.name]
+        option_strings = ["--" + self.name]
         if short_name is not None:
-            option_strings.append("-%s" % short_name)
+            option_strings.append("-" + short_name)
         if self.hidden:
             help = optparse.SUPPRESS_HELP
         else:
@@ -145,7 +145,7 @@ class Option(object):
                               callback_args=(True,),
                               help=help,
                               *option_strings)
-            negation_strings = ["--%s" % self.get_negation_name()]
+            negation_strings = ["--" + self.get_negation_name()]
             parser.add_option(action="callback",
                               callback=self._optparse_bool_callback,
                               callback_args=(False,),
@@ -193,9 +193,9 @@ class ListOption(Option):
 
     def add_option(self, parser, short_name):
         """Add this option to an Optparse parser."""
-        option_strings = ["--%s" % self.name]
+        option_strings = ["--" + self.name]
         if short_name is not None:
-            option_strings.append("-%s" % short_name)
+            option_strings.append("-" + short_name)
         parser.add_option(action="callback",
                           callback=self._optparse_callback,
                           type="string", metavar=self.argname.upper(),
@@ -307,7 +307,7 @@ class Command(object):
 
     def __init__(self, **param):
         assert self.__doc__ != Command.__doc__, \
-            "No help message set for %r" % self
+            "No help message set for {!r}".format(self)
         self.supported_std_options = []
         self.param = param
 
@@ -391,8 +391,7 @@ class Command(object):
         Return 0 or None if the command was successful, or a non-zero shell
         error code if not. It is okay for this method to raise exceptions.
         """
-        raise NotImplementedError("No implementation of command %r"
-                                  % self.name())
+        raise NotImplementedError("No implementation of command {!r}".format(self.name()))
 
     def get_config_file(self):
         """Guess the name of the configuration file.
@@ -514,7 +513,7 @@ class Command(object):
         """
         doc = self.help()
         if doc is None:
-            raise NotImplementedError("sorry, no detailed help yet for %r" % self.name())
+            raise NotImplementedError("sorry, no detailed help yet for {!r}".format(self.name()))
 
         # Extract the summary (purpose) and sections out from the text
         purpose, sections, order = self._get_help_parts(doc)
@@ -527,11 +526,11 @@ class Command(object):
 
         # The header is the purpose and usage
         result = ""
-        result += ":Purpose: %s\n" % purpose
+        result += ":Purpose: {!s}\n".format(purpose)
         if usage.find("\n") >= 0:
-            result += ":Usage:\n%s\n" % usage
+            result += ":Usage:\n{!s}\n".format(usage)
         else:
-            result += ":Usage:   %s\n" % usage
+            result += ":Usage:   {!s}\n".format(usage)
         result += "\n"
 
         # Add the options
@@ -555,18 +554,18 @@ class Command(object):
             if None in sections:
                 text = sections.pop(None)
                 text = "\n  ".join(text.splitlines())
-                result += ":%s:\n  %s\n\n" % ("Description", text)
+                result += ":Description:\n  {!s}\n\n".format(text)
 
             # Add the custom sections (e.g. Examples). Note that there's no need
             # to indent these as they must be indented already in the source.
             if sections:
                 for label in order:
                     if label in sections:
-                        result += ":%s:\n%s\n" % (label, sections[label])
+                        result += ":{!s}:\n{!s}\n".format(label, sections[label])
                 result += "\n"
         else:
-            result += ("See help %s for more details and examples.\n\n"
-                       % self.name())
+            result += "See \"help {!s}\" for more details and examples.\n\n".format(self.name())
+
         # Add the aliases, source (plug-in) and see also links, if any
         if self.aliases:
             result += ":Aliases: "
@@ -657,29 +656,25 @@ def _match_argform(cmd, takes_args, args):
                 argdict[argname + "_list"] = ()
         elif ap[-1] == "+":
             if not args:
-                raise CommandError("command %r needs one or more %s"
-                                   % (cmd, argname.upper()))
+                raise CommandError("command {!r} needs one or more {!s}".format(cmd, argname.upper()))
             else:
                 argdict[argname + "_list"] = args[:]
                 args = []
         elif ap[-1] == "$":  # all but one
             if len(args) < 2:
-                raise CommandError("command %r needs one or more %s"
-                                   % (cmd, argname.upper()))
+                raise CommandError("command {!r} needs one or more {!s}".format(cmd, argname.upper()))
             argdict[argname + "_list"] = args[:-1]
             args[:-1] = []
         else:
             # just a plain arg
             argname = ap
             if not args:
-                raise CommandError("command %r requires argument %s"
-                                   % (cmd, argname.upper()))
+                raise CommandError("command {!r} requires argument {!s}".format(cmd, argname.upper()))
             else:
                 argdict[argname] = args.pop(0)
 
     if args:
-        raise CommandError("extra argument to command %s: %s"
-                           % (cmd, args[0]))
+        raise CommandError("extra argument to command {!r}: {!s}".format(cmd, args[0]))
 
     return argdict
 
@@ -747,7 +742,7 @@ class cmd_unlock(Command):
             if not os.path.exists(path):
                 continue
             if not os.path.isfile(path):
-                sys.stderr.write("not a regular file: %s\n" % path)
+                sys.stderr.write("not a regular file: {!s}\n".format(path))
                 continue
 
             if not force:
@@ -764,28 +759,23 @@ class cmd_unlock(Command):
                     #
                     os.kill(pid, 0)
 
-                    sys.stderr.write(("%s: skipping (PID %i is alive),"
-                                      " --force could help\n") % (path, pid))
+                    sys.stderr.write("{!s}: skipping (PID {} alive), --force might help\n".format(path, pid))
                 except ValueError as e:
-                    sys.stderr.write(("%s: malformed pid (%s), --force"
-                                      " could help\n") % (path, e))
+                    sys.stderr.write("{!s}: malformed PID ({!s}), --force might help\n".format(path, e))
                     continue
                 except IOError as e:
-                    sys.stderr.write(("%s: cannot read (%s), --force"
-                                      " could help\n") % (path, e))
+                    sys.stderr.write("{!s}: cannot read ({!s}), --force might help\n".format(path, e))
                     continue
                 except OSError as e:
                     if e.errno != ESRCH:
-                        sys.stderr.write(("%s: cannot ping PID %i (maybe"
-                                          " wrong credentials?)\n") % (path, pid))
+                        sys.stderr.write("{!s}: cannot ping PID {} (wrong credentials?)\n".format(path, pid))
                         continue
 
             # Finally, try to remove the file
             try:
                 os.remove(path)
             except IOError as e:
-                sys.stderr.write(("%s: cannot remove (%s), maybe running"
-                                  " with wrong credentials\n") % (path, e))
+                sys.stderr.write("{!s}: cannot remove ({!s}) (wrong credentials?\n".format(path, e))
 
 
 _cli_top_level_help_text = """\
@@ -861,7 +851,7 @@ class CLI(object):
             conffile = param["cli_config_file_path"]
             del param["cli_config_file_path"]
         else:
-            conffile = "/etc/%s.conf" % toolname
+            conffile = "/etc/{!s}.conf".format(toolname)
 
         return CLI(name=toolname, config_file=conffile, config_env_var=envvar,
                    commands=modname, **param)
@@ -998,7 +988,7 @@ class CLI(object):
         elif self.has_command(topic):
             text = self.get_command(topic).get_help_text()
         else:
-            text = "%s: Unavailable help topic '%s'\n" % (self.name, topic)
+            text = "{!s}: Unavailable help topic '{!s}'\n".format(self.name, topic)
 
         sys.stdout.write(text)
 
@@ -1022,7 +1012,7 @@ class CLI(object):
                 if name in command.aliases:
                     return command(**command.__cmd_param__)
 
-        raise KeyError("No command %r" % name)
+        raise KeyError("No such command {!r}".format(name))
 
     def has_command(self, name, alias=True):
         """Check whether a command exists given its name.
@@ -1054,12 +1044,12 @@ class CLI(object):
             cmd = argv and argv.pop(0) or "help"
             cmd = self.get_command(cmd)
         except KeyError:
-            return "%s: command '%s' does not exist." % (self.name, cmd)
+            return "{!s}: command '{!s}' does not exist.".format(self.name, cmd)
 
         try:
             return cmd.run_argv_aliases(argv) or 0
         except CommandError as e:
-            return "%s: %s" % (self.name, e)
+            return "{!s}: {!s}".format(self.name, e)
 
 
 def main(toolname=None, argv=None, **kw):
