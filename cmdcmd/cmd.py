@@ -873,7 +873,7 @@ class CLI(object):
         :param commands: List of modules (or strings with module names) from
             which commands will be used. As an option, you may directly pass
             a dictionary mapping names to instances of :class:`Command`. If
-            not give, the module from which the class is being instantiated
+            not given, the module from which the class is being instantiated
             will be used.
         """
         self.name = name or sys.argv[0]
