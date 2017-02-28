@@ -928,7 +928,7 @@ class CLI(object):
         kw["cmd:help_output"] = self._output_help
 
         if commands is None:
-            commands = [sys._getframe(1).f_globals]
+            commands = [sys._getframe(2).f_globals]
         elif isinstance(commands, (list, tuple)):
             commands = {c.name(): c for c in commands}
         if isinstance(commands, (dict, str, types.ModuleType)):
