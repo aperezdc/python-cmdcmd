@@ -63,7 +63,7 @@ class Option(object):
 
     OPTIONS = {}
 
-    def __init__(self, name, help="", type=None, argname=None,
+    def __init__(self, name, help="", type=None, argname=None,  # noqa: B002
                  short_name=None, param_name=None, custom_callback=None,
                  hidden=False):
         """Make a new action option.
@@ -136,15 +136,15 @@ class Option(object):
         if short_name is not None:
             option_strings.append("-" + short_name)
         if self.hidden:
-            help = optparse.SUPPRESS_HELP
+            _help = optparse.SUPPRESS_HELP
         else:
-            help = self.help
+            _help = self.help
         optargfn = self.type
         if optargfn is None:
             parser.add_option(action="callback",
                               callback=self._optparse_bool_callback,
                               callback_args=(True,),
-                              help=help,
+                              help=_help,
                               *option_strings)
             negation_strings = ["--" + self.get_negation_name()]
             parser.add_option(action="callback",
@@ -155,7 +155,7 @@ class Option(object):
             parser.add_option(action="callback",
                               callback=self._optparse_callback,
                               type="string", metavar=self.argname.upper(),
-                              help=help,
+                              help=_help,
                               default=OptionParser.DEFAULT_VALUE,
                               *option_strings)
 
