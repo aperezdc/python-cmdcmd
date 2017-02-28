@@ -38,12 +38,12 @@ def rst_to_plain_text(text):
     lines = text.splitlines()
     result = []
     for line in lines:
-        if line.startswith(':'):
+        if line.startswith(":"):
             line = line[1:]
-        elif line.endswith('::'):
+        elif line.endswith("::"):
             line = line[:-1]
         # Map :doc:`xxx-help` to ``help xxx``
-        line = re.sub(":doc:`(.+)-help`", r'``help \1``', line)
+        line = re.sub(":doc:`(.+)-help`", r"``help \1``", line)
         result.append(line)
     return "\n".join(result) + "\n"
 
@@ -96,12 +96,12 @@ class Option(object):
         self._short_name = short_name
         if type is None:
             if argname:
-                raise ValueError('argname not valid for booleans')
+                raise ValueError("argname not valid for booleans")
         elif argname is None:
-            argname = 'ARG'
+            argname = "ARG"
         self.argname = argname
         if param_name is None:
-            self._param_name = self.name.replace('-', '_')
+            self._param_name = self.name.replace("-", "_")
         else:
             self._param_name = param_name
         self.custom_callback = custom_callback
@@ -131,29 +131,29 @@ class Option(object):
 
     def add_option(self, parser, short_name):
         """Add this option to an optparse parser."""
-        option_strings = ['--%s' % self.name]
+        option_strings = ["--%s" % self.name]
         if short_name is not None:
-            option_strings.append('-%s' % short_name)
+            option_strings.append("-%s" % short_name)
         if self.hidden:
             help = optparse.SUPPRESS_HELP
         else:
             help = self.help
         optargfn = self.type
         if optargfn is None:
-            parser.add_option(action='callback',
+            parser.add_option(action="callback",
                               callback=self._optparse_bool_callback,
                               callback_args=(True,),
                               help=help,
                               *option_strings)
-            negation_strings = ['--%s' % self.get_negation_name()]
-            parser.add_option(action='callback',
+            negation_strings = ["--%s" % self.get_negation_name()]
+            parser.add_option(action="callback",
                               callback=self._optparse_bool_callback,
                               callback_args=(False,),
                               help=optparse.SUPPRESS_HELP, *negation_strings)
         else:
-            parser.add_option(action='callback',
+            parser.add_option(action="callback",
                               callback=self._optparse_callback,
-                              type='string', metavar=self.argname.upper(),
+                              type="string", metavar=self.argname.upper(),
                               help=help,
                               default=OptionParser.DEFAULT_VALUE,
                               *option_strings)
@@ -193,18 +193,18 @@ class ListOption(Option):
 
     def add_option(self, parser, short_name):
         """Add this option to an Optparse parser."""
-        option_strings = ['--%s' % self.name]
+        option_strings = ["--%s" % self.name]
         if short_name is not None:
-            option_strings.append('-%s' % short_name)
-        parser.add_option(action='callback',
+            option_strings.append("-%s" % short_name)
+        parser.add_option(action="callback",
                           callback=self._optparse_callback,
-                          type='string', metavar=self.argname.upper(),
+                          type="string", metavar=self.argname.upper(),
                           help=self.help, default=[],
                           *option_strings)
 
     def _optparse_callback(self, option, opt, value, parser):
         values = getattr(parser.values, self._param_name)
-        if value == '-':
+        if value == "-":
             del values[:]
         else:
             values.append(self.type(value))
@@ -225,7 +225,7 @@ def get_optparser(options):
     """Generate an optparse parser for bzrlib-style options"""
 
     parser = OptionParser()
-    parser.remove_option('--help')
+    parser.remove_option("--help")
     for option in options.values():
         option.add_option(parser, option.short_name)
     return parser
@@ -256,7 +256,7 @@ def _squish_command_name(name):
     :param name: Command name.
     :rtype: str
     """
-    return 'cmd_' + name.replace('-', '_')
+    return "cmd_" + name.replace("-", "_")
 
 
 def _unsquish_command_name(identifier):
@@ -265,7 +265,7 @@ def _unsquish_command_name(identifier):
     :param identifier: Command identifier.
     :rtype: str
     """
-    return identifier[4:].replace('_', '-')
+    return identifier[4:].replace("_", "-")
 
 
 class Command(object):
@@ -333,7 +333,7 @@ class Command(object):
         for aname in self.takes_args:
             aname = aname.upper()
             if aname[-1] in ("$", "+"):
-                aname = aname[:-1] + '...'
+                aname = aname[:-1] + "..."
             elif aname[-1] == "?":
                 aname = "[" + aname[:-1] + "]"
             elif aname[-1] == "*":
@@ -451,10 +451,10 @@ class Command(object):
         args, opts = parse_args(self, argv, alias_argv)
 
         # Process the standard options
-        if 'help' in opts:  # e.g. command add --help
+        if "help" in opts:  # e.g. command add --help
             sys.stdout.write(self.get_help_text())
             return 0
-        if 'usage' in opts:  # e.g. command add --usage
+        if "usage" in opts:  # e.g. command add --usage
             sys.stdout.write(self.get_help_text(verbose=False))
             return 0
 
@@ -462,7 +462,7 @@ class Command(object):
         cmdargs = _match_argform(self.name(), self.takes_args, args)
         cmdopts = {}
         for k, v in opts.items():
-            cmdopts[k.replace('-', '_')] = v
+            cmdopts[k.replace("-", "_")] = v
 
         all_cmd_args = cmdargs.copy()
         all_cmd_args.update(cmdopts)
@@ -520,19 +520,19 @@ class Command(object):
         purpose, sections, order = self._get_help_parts(doc)
 
         # If a custom usage section was provided, use it
-        if sections.has_key('Usage'):
-            usage = sections.pop('Usage')
+        if sections.has_key("Usage"):
+            usage = sections.pop("Usage")
         else:
             usage = self._usage()
 
         # The header is the purpose and usage
         result = ""
-        result += ':Purpose: %s\n' % purpose
-        if usage.find('\n') >= 0:
-            result += ':Usage:\n%s\n' % usage
+        result += ":Purpose: %s\n" % purpose
+        if usage.find("\n") >= 0:
+            result += ":Usage:\n%s\n" % usage
         else:
-            result += ':Usage:   %s\n' % usage
-        result += '\n'
+            result += ":Usage:   %s\n" % usage
+        result += "\n"
 
         # Add the options
         #
@@ -540,37 +540,37 @@ class Command(object):
         # so we get <https://bugs.launchpad.net/bzr/+bug/249908>.  -- mbp
         # 20090319
         options = get_optparser(self.options()).format_option_help()
-        if options.startswith('Options:'):
-            result += ':' + options
-        elif options.startswith('options:'):
+        if options.startswith("Options:"):
+            result += ":" + options
+        elif options.startswith("options:"):
             # Python 2.4 version of optparse
-            result += ':Options:' + options[len('options:'):]
+            result += ":Options:" + options[len("options:"):]
         else:
             result += options
-        result += '\n'
+        result += "\n"
 
         if verbose:
             # Add the description, indenting it 2 spaces
             # to match the indentation of the options
             if sections.has_key(None):
                 text = sections.pop(None)
-                text = '\n  '.join(text.splitlines())
-                result += ':%s:\n  %s\n\n' % ('Description',text)
+                text = "\n  ".join(text.splitlines())
+                result += ":%s:\n  %s\n\n" % ("Description", text)
 
             # Add the custom sections (e.g. Examples). Note that there's no need
             # to indent these as they must be indented already in the source.
             if sections:
                 for label in order:
-                    if sections.has_key(label):
-                        result += ':%s:\n%s\n' % (label,sections[label])
-                result += '\n'
+                    if label in sections:
+                        result += ":%s:\n%s\n" % (label, sections[label])
+                result += "\n"
         else:
             result += ("See help %s for more details and examples.\n\n"
                        % self.name())
         # Add the aliases, source (plug-in) and see also links, if any
         if self.aliases:
-            result += ':Aliases: '
-            result += ', '.join(self.aliases) + '\n'
+            result += ":Aliases: "
+            result += ", ".join(self.aliases) + "\n"
 
         # If this will be rendered as plain text, convert it
         if plain:
@@ -590,8 +590,8 @@ class Command(object):
         """
         def save_section(sections, order, label, section):
             if len(section) > 0:
-                if sections.has_key(label):
-                    sections[label] += '\n' + section
+                if label in sections:
+                    sections[label] += "\n" + section
                 else:
                     order.append(label)
                     sections[label] = section
@@ -600,17 +600,17 @@ class Command(object):
         summary = lines.pop(0)
         sections = {}
         order = []
-        label, section = None, ''
+        label, section = None, ""
         for line in lines:
-            if line.startswith(':') and line.endswith(':') and len(line) > 2:
+            if line.startswith(":") and line.endswith(":") and len(line) > 2:
                 save_section(sections, order, label, section)
-                label, section = line[1:-1], ''
+                label, section = line[1:-1], ""
             elif (label is not None) and len(line) > 1 and not line[0].isspace():
                 save_section(sections, order, label, section)
                 label, section = None, line
             else:
                 if len(section) > 0:
-                    section += '\n' + line
+                    section += "\n" + line
                 else:
                     section = line
         save_section(sections, order, label, section)
@@ -646,27 +646,27 @@ def _match_argform(cmd, takes_args, args):
     # step through args and takes_args, allowing appropriate 0-many matches
     for ap in takes_args:
         argname = ap[:-1]
-        if ap[-1] == '?':
+        if ap[-1] == "?":
             if args:
                 argdict[argname] = args.pop(0)
-        elif ap[-1] == '*':  # all remaining arguments
+        elif ap[-1] == "*":  # all remaining arguments
             if args:
-                argdict[argname + '_list'] = args[:]
+                argdict[argname + "_list"] = args[:]
                 args = []
             else:
-                argdict[argname + '_list'] = ()
-        elif ap[-1] == '+':
+                argdict[argname + "_list"] = ()
+        elif ap[-1] == "+":
             if not args:
                 raise CommandError("command %r needs one or more %s"
                                    % (cmd, argname.upper()))
             else:
-                argdict[argname + '_list'] = args[:]
+                argdict[argname + "_list"] = args[:]
                 args = []
-        elif ap[-1] == '$':  # all but one
+        elif ap[-1] == "$":  # all but one
             if len(args) < 2:
                 raise CommandError("command %r needs one or more %s"
                                    % (cmd, argname.upper()))
-            argdict[argname + '_list'] = args[:-1]
+            argdict[argname + "_list"] = args[:-1]
             args[:-1] = []
         else:
             # just a plain arg
@@ -696,11 +696,11 @@ def ignore_pipe_err(func):
             sys.stdout.flush()
             return result
         except IOError as e:
-            if getattr(e, 'errno', None) is None:
+            if getattr(e, "errno", None) is None:
                 raise
             if e.errno != errno.EPIPE:
                 # Win32 raises IOError with errno=0 on a broken pipe
-                if sys.platform != 'win32' or (e.errno not in (0, errno.EINVAL)):
+                if sys.platform != "win32" or (e.errno not in (0, errno.EINVAL)):
                     raise
             pass
         except KeyboardInterrupt:
@@ -711,8 +711,8 @@ def ignore_pipe_err(func):
 class cmd_help(Command):
     """Show help on a command."""
 
-    takes_args = ['topic?']
-    aliases = ['?', '--help', '-?', '-h']
+    takes_args = ["topic?"]
+    aliases = ["?", "--help", "-?", "-h"]
 
     def run(self, topic=None, long=False):
         if topic is None:
