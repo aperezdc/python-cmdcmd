@@ -520,7 +520,7 @@ class Command(object):
         purpose, sections, order = self._get_help_parts(doc)
 
         # If a custom usage section was provided, use it
-        if sections.has_key("Usage"):
+        if "Usage" in sections:
             usage = sections.pop("Usage")
         else:
             usage = self._usage()
@@ -552,7 +552,7 @@ class Command(object):
         if verbose:
             # Add the description, indenting it 2 spaces
             # to match the indentation of the options
-            if sections.has_key(None):
+            if None in sections:
                 text = sections.pop(None)
                 text = "\n  ".join(text.splitlines())
                 result += ":%s:\n  %s\n\n" % ("Description", text)
