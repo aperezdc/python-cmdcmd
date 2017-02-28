@@ -884,7 +884,7 @@ class CLI(object):
             not give, the module from which the class is being instantiated
             will be used.
         """
-        self.name = name or argv[0]
+        self.name = name or sys.argv[0]
         self._registry = {}
 
         param["cmd:help_output"] = self._output_help
