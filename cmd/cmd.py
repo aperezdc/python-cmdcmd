@@ -754,7 +754,7 @@ class cmd_unlock(Command):
                 # Do some sanity check
 
                 try:
-                    lockfd = file(path, "rU")
+                    lockfd = open(path, "rU")
                     pid = int(lockfd.readline())
                     lockfd.close()
 
