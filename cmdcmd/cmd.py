@@ -596,7 +596,7 @@ class Command(object):
                     sections[label] = section
 
         lines = text.rstrip().splitlines()
-        summary = lines.pop(0)
+        summary = lines.pop(0) if len(lines) else ""
         sections = {}
         order = []
         label, section = None, ""
