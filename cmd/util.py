@@ -11,7 +11,6 @@ Common utilities used all along Valkyrie.
 """
 
 import errno
-import fcntl
 import os
 
 

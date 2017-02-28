@@ -741,7 +741,7 @@ class cmd_unlock(Command):
     )
 
     def run(self, force=False):
-        from errno import EPERM, ESRCH
+        from errno import ESRCH
 
         for path in self.param.get("cmd:lock_files", ()):
             if not os.path.exists(path):
