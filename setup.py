@@ -9,6 +9,7 @@
 from setuptools import setup, find_packages
 from os import path
 
+
 def distrib_file(*relpath):
     try:
         return open(path.join(path.dirname(__file__), *relpath), "rU",
@@ -18,6 +19,7 @@ def distrib_file(*relpath):
             def read(self):
                 return ""
         return DummyFile()
+
 
 def get_version():
     for line in distrib_file("cmd", "__init__.py"):
@@ -30,6 +32,7 @@ def get_version():
 
 def get_readme():
     return distrib_file("README.rst").read()
+
 
 setup(
     name="cmd",
@@ -65,7 +68,6 @@ setup(
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
-         "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: Python :: 3 :: Only",
     ]
 )
-

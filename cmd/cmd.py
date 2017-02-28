@@ -48,7 +48,6 @@ def rst_to_plain_text(text):
     return "\n".join(result) + "\n"
 
 
-
 class CommandError(RuntimeError):
     """An error occured running a command."""
 
@@ -175,7 +174,7 @@ class Option(object):
 
         :return: an iterator of (name, short_name, argname, help)
         """
-        argname =  self.argname
+        argname = self.argname
         if argname is not None:
             argname = argname.upper()
         yield self.name, self.short_name(), argname, self.help
@@ -244,7 +243,6 @@ def _global_option(name, **kwargs):
     Option.OPTIONS[name] = Option(name, **kwargs)
 
 
-
 # Declare standard options
 _standard_option("help", short_name="h",
                  help="Show help message")
@@ -267,7 +265,7 @@ def _unsquish_command_name(identifier):
     :param identifier: Command identifier.
     :rtype: str
     """
-    return identifier[4:].replace('_','-')
+    return identifier[4:].replace('_', '-')
 
 
 class Command(object):
@@ -300,16 +298,16 @@ class Command(object):
         instead of a full traceback.
     """
     takes_options = ()
-    takes_args    = ()
-    aliases       = ()
-    hidden        = False
-    locking       = None
-    exceptions    = None
+    takes_args = ()
+    aliases = ()
+    hidden = False
+    locking = None
+    exceptions = None
     __cmd_param__ = {}
 
     def __init__(self, **param):
         assert self.__doc__ != Command.__doc__, \
-                "No help message set for %r" % self
+            "No help message set for %r" % self
         self.supported_std_options = []
         self.param = param
 
@@ -325,7 +323,6 @@ class Command(object):
                     name = name[:-1]
 
                 self.lock[name] = util.Lock(param["cmd:tool_name"], name)
-
 
     def _usage(self):
         """Return a single-line grammar for this action.
@@ -397,7 +394,6 @@ class Command(object):
         raise NotImplementedError("No implementation of command %r"
                                   % self.name())
 
-
     def get_config_file(self):
         """Guess the name of the configuration file.
 
@@ -415,7 +411,6 @@ class Command(object):
             cfgfile = os.environ[env_var]
 
         return cfgfile
-
 
     def name(self):
         """Return the name of the action."""
@@ -522,7 +517,7 @@ class Command(object):
             raise NotImplementedError("sorry, no detailed help yet for %r" % self.name())
 
         # Extract the summary (purpose) and sections out from the text
-        purpose,sections,order = self._get_help_parts(doc)
+        purpose, sections, order = self._get_help_parts(doc)
 
         # If a custom usage section was provided, use it
         if sections.has_key('Usage'):
@@ -571,7 +566,7 @@ class Command(object):
                 result += '\n'
         else:
             result += ("See help %s for more details and examples.\n\n"
-                % self.name())
+                       % self.name())
         # Add the aliases, source (plug-in) and see also links, if any
         if self.aliases:
             result += ':Aliases: '
@@ -605,14 +600,14 @@ class Command(object):
         summary = lines.pop(0)
         sections = {}
         order = []
-        label,section = None,''
+        label, section = None, ''
         for line in lines:
             if line.startswith(':') and line.endswith(':') and len(line) > 2:
                 save_section(sections, order, label, section)
-                label,section = line[1:-1],''
+                label, section = line[1:-1], ''
             elif (label is not None) and len(line) > 1 and not line[0].isspace():
                 save_section(sections, order, label, section)
-                label,section = None,line
+                label, section = None, line
             else:
                 if len(section) > 0:
                     section += '\n' + line
@@ -654,7 +649,7 @@ def _match_argform(cmd, takes_args, args):
         if ap[-1] == '?':
             if args:
                 argdict[argname] = args.pop(0)
-        elif ap[-1] == '*': # all remaining arguments
+        elif ap[-1] == '*':  # all remaining arguments
             if args:
                 argdict[argname + '_list'] = args[:]
                 args = []
@@ -667,10 +662,10 @@ def _match_argform(cmd, takes_args, args):
             else:
                 argdict[argname + '_list'] = args[:]
                 args = []
-        elif ap[-1] == '$': # all but one
+        elif ap[-1] == '$':  # all but one
             if len(args) < 2:
                 raise CommandError("command %r needs one or more %s"
-                                             % (cmd, argname.upper()))
+                                   % (cmd, argname.upper()))
             argdict[argname + '_list'] = args[:-1]
             args[:-1] = []
         else:
@@ -678,16 +673,15 @@ def _match_argform(cmd, takes_args, args):
             argname = ap
             if not args:
                 raise CommandError("command %r requires argument %s"
-                               % (cmd, argname.upper()))
+                                   % (cmd, argname.upper()))
             else:
                 argdict[argname] = args.pop(0)
 
     if args:
         raise CommandError("extra argument to command %s: %s"
-                                     % (cmd, args[0]))
+                           % (cmd, args[0]))
 
     return argdict
-
 
 
 def ignore_pipe_err(func):
@@ -712,7 +706,6 @@ def ignore_pipe_err(func):
         except KeyboardInterrupt:
             pass
     return ignore_pipe
-
 
 
 class cmd_help(Command):
@@ -772,19 +765,19 @@ class cmd_unlock(Command):
                     os.kill(pid, 0)
 
                     sys.stderr.write(("%s: skipping (PID %i is alive),"
-                        " --force could help\n") % (path, pid))
+                                      " --force could help\n") % (path, pid))
                 except ValueError as e:
                     sys.stderr.write(("%s: malformed pid (%s), --force"
-                        " could help\n") % (path, e))
+                                      " could help\n") % (path, e))
                     continue
                 except IOError as e:
                     sys.stderr.write(("%s: cannot read (%s), --force"
-                        " could help\n") % (path, e))
+                                      " could help\n") % (path, e))
                     continue
                 except OSError as e:
                     if e.errno != ESRCH:
                         sys.stderr.write(("%s: cannot ping PID %i (maybe"
-                            " wrong credentials?)\n") % (path, pid))
+                                          " wrong credentials?)\n") % (path, pid))
                         continue
 
             # Finally, try to remove the file
@@ -792,8 +785,7 @@ class cmd_unlock(Command):
                 os.remove(path)
             except IOError as e:
                 sys.stderr.write(("%s: cannot remove (%s), maybe running"
-                    " with wrong credentials\n") % (path, e))
-
+                                  " with wrong credentials\n") % (path, e))
 
 
 _cli_top_level_help_text = """\
@@ -844,7 +836,6 @@ class CLI(object):
 
     scan_commands = staticmethod(scan_commands)
 
-
     def from_tool_name(toolname, **param):
         """Creates a CLI for a given tool name.
 
@@ -872,18 +863,13 @@ class CLI(object):
         else:
             conffile = "/etc/%s.conf" % toolname
 
-        return CLI(
-                name           = toolname,
-                config_file    = conffile,
-                config_env_var = envvar,
-                commands       = modname,
-                **param)
+        return CLI(name=toolname, config_file=conffile, config_env_var=envvar,
+                   commands=modname, **param)
 
     from_tool_name = staticmethod(from_tool_name)
 
-
     def __init__(self, name=None, config_file=None, config_env_var=None,
-        commands=None, *arg, **param):
+                 commands=None, *arg, **param):
         """Create a new command line interface controller.
 
         :param name: Tool name. If not given, the base name of
@@ -902,7 +888,7 @@ class CLI(object):
         self._registry = {}
 
         param["cmd:help_output"] = self._output_help
-        param["cmd:tool_name"]   = self.name
+        param["cmd:tool_name"] = self.name
 
         if isinstance(config_env_var, str) and config_env_var:
             param["cmd:config_env_var"] = config_env_var
@@ -919,7 +905,6 @@ class CLI(object):
 
         self.add_command(cmd_help, **param)
 
-
     def __gather_lock_files(self, process):
         files = set()
         for command in self._registry.values():
@@ -933,13 +918,11 @@ class CLI(object):
 
         return files
 
-
     def add_command(self, command, **param):
         """Adds a single command to the command registry.
         """
         assert issubclass(command, Command)
         self.add_commands((command,), **param)
-
 
     def add_commands(self, commands=None, *arg, **kw):
         """Register commands.
@@ -962,7 +945,6 @@ class CLI(object):
         for item in commands:
             self._registry.update(self.scan_commands(item, *arg, **kw))
 
-
     def _output_help_commands(self, hidden=False, indent=0):
         """Generate text output for 'help commands'
 
@@ -976,7 +958,7 @@ class CLI(object):
             return ""
 
         max_name = max([len(n) for n in cmdnames])
-        result   = []
+        result = []
 
         # It is better to have the output sorted by name.
         cmdnames.sort()
@@ -1000,7 +982,6 @@ class CLI(object):
 
         return "".join(result)
 
-
     def _output_help(self, topic):
         """Print out help for a given topic.
 
@@ -1009,7 +990,7 @@ class CLI(object):
         """
         if topic == "help":
             text = _cli_top_level_help_text % (self.name,
-                    self._output_help_commands(indent=3))
+                                               self._output_help_commands(indent=3))
         elif topic == "commands":
             text = self._output_help_commands()
         elif topic == "hidden-commands":
@@ -1020,7 +1001,6 @@ class CLI(object):
             text = "%s: Unavailable help topic '%s'\n" % (self.name, topic)
 
         sys.stdout.write(text)
-
 
     def get_command(self, name, alias=True):
         """Obtain a command given its name.
@@ -1044,7 +1024,6 @@ class CLI(object):
 
         raise KeyError("No command %r" % name)
 
-
     def has_command(self, name, alias=True):
         """Check whether a command exists given its name.
 
@@ -1060,7 +1039,6 @@ class CLI(object):
                     return True
 
         return name in self._registry
-
 
     def run(self, argv=None):
         """Run the command line tool.
@@ -1082,7 +1060,6 @@ class CLI(object):
             return cmd.run_argv_aliases(argv) or 0
         except CommandError as e:
             return "%s: %s" % (self.name, e)
-
 
 
 def main(toolname=None, argv=None, **kw):

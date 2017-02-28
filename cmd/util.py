@@ -18,15 +18,17 @@ import os
 class LockError(RuntimeError):
     """Base class for :class:`Lock` exceptions."""
 
+
 class CannotLockError(LockError):
     """Lock cannot be acquired."""
+
 
 class AlreadyLockedError(LockError):
     """Tried to lock an already-locked lock."""
 
+
 class AlreadyUnlockedError(LockError):
     """Tried to unlock an already-unlocked lock."""
-
 
 
 class Lock(object):
@@ -40,7 +42,7 @@ class Lock(object):
     """
 
     BASE_DIR = os.environ.get("LOCKDIR", "/var/lock")
-    O_MODE   = os.O_CREAT | os.O_EXCL | os.O_RDWR
+    O_MODE = os.O_CREAT | os.O_EXCL | os.O_RDWR
 
     def __init__(self, process, name=None):
         self._lockfile = self.file_path(process, name)
@@ -69,10 +71,10 @@ class Lock(object):
     file_path = classmethod(file_path)
 
     path = property(lambda self: self._lockfile,
-            doc="Full path to the lock file")
+                    doc="Full path to the lock file")
 
     locked = property(lambda self: self._fileno is not None,
-            doc="Whether the lock is being held")
+                      doc="Whether the lock is being held")
 
     def __enter__(self):
         """Obtain the lock for use in a ``with`` statement.
@@ -88,7 +90,6 @@ class Lock(object):
         """Release the lock when exiting a ``with`` statement.
         """
         self.unlock()
-
 
     def lock(self, tryonly=False):
         """Obtain the lock.
@@ -136,13 +137,11 @@ class Lock(object):
         self._fileno = None
 
 
-
 class Bag(dict):
     """Behaves like a dictionary, but allows attribute reads.
     """
     def __getattr__(self, name):
         return self[name]
-
 
 
 __all__ = (
@@ -152,4 +151,3 @@ __all__ = (
     "AlreadyUnlockedError",
     "Bag",
 )
-

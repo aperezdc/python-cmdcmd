@@ -19,14 +19,17 @@ class cmd_foo(cmd.Command):
     def run(self):
         return 0
 
+
 class cmd_bar(cmd.Command):
     """Does bar."""
     def run(self):
         return 0
 
+
 class cmd_spam(cmd.Command):
     """Does spam, has an alias."""
     aliases = ("eggs",)
+
     def run(self):
         return 0
 
@@ -59,4 +62,3 @@ class TestCmdCommand(unittest.TestCase):
         self.assertIsCommand(cli.get_command("spam", True), cmd_spam)
         self.assertIsCommand(cli.get_command("spam", False), cmd_spam)
         self.assertRaises(KeyError, cli.get_command, "eggs", False)
-
