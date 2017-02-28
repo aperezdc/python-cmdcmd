@@ -7,4 +7,4 @@
 
 __version__ = 1
 
-from .cmd import CLI, Command, Option  # noqa
+from .cmd import CLI, Command, Option, main  # noqa
