@@ -22,7 +22,7 @@ def distrib_file(*relpath):
 
 
 def get_version():
-    for line in distrib_file("cmd", "__init__.py"):
+    for line in distrib_file("cmdcmd", "__init__.py"):
         if line.startswith("__version__"):
             line = line.split()
             if line[0] == "__version__":
@@ -35,13 +35,13 @@ def get_readme():
 
 
 setup(
-    name="cmd",
+    name="cmdcmd",
     version=get_version(),
     description="Ergonomic command line interface maker",
     long_description=get_readme(),
     author="Adrian Perez de Castro",
     author_email="aperez@igalia.com",
-    url="https://github.com/aperezdc/python-cmd",
+    url="https://github.com/aperezdc/python-cmdcmd",
     packages=find_packages(),
     extras_require={
         "dev": [
