@@ -957,7 +957,7 @@ class CLI(object):
         if not cmdnames:
             return ""
 
-        max_name = max([len(n) for n in cmdnames])
+        max_name = max((len(n) for n in cmdnames))
         result = []
 
         # It is better to have the output sorted by name.
