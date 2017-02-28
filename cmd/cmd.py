@@ -437,7 +437,7 @@ class Command(object):
         result = Option.STD_OPTIONS.copy()
         std_names = result.keys()
         for opt in self.takes_options:
-            if isinstance(opt, basestring):
+            if isinstance(opt, str):
                 opt = Option.OPTIONS[opt]
             result[opt.name] = opt
             if opt.name in std_names:
