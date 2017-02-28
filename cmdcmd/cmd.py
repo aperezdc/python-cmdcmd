@@ -1037,7 +1037,9 @@ class CLI(object):
             used.
         """
         if argv is None:
-            argv = map(lambda x: x.decode("utf-8"), sys.argv[1:])
+            argv = [item.decode("utf-8")
+                    if isinstance(item, bytes) else item
+                    for item in sys.argv[1:]]
 
         try:
             cmd = argv and argv.pop(0) or "help"
