@@ -12,6 +12,7 @@ Utilities to build command-line action-based programs.
 
 from . import util
 from inspect import isclass
+from keyword import iskeyword
 import optparse
 import types
 import sys
@@ -461,6 +462,8 @@ class Command(object):
         cmdargs = _match_argform(self.name(), self.takes_args, args)
         cmdopts = {}
         for k, v in opts.items():
+            if iskeyword(k):
+                k = "_" + k
             cmdopts[k.replace("-", "_")] = v
 
         all_cmd_args = cmdargs.copy()
