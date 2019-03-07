@@ -5,6 +5,6 @@
 #
 # Distributed under terms of the MIT license.
 
-__version__ = 1
+__version__ = 2
 
 from .cmd import CLI, Command, Option, main  # noqa
