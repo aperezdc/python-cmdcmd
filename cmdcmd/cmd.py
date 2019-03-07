@@ -19,14 +19,6 @@ import sys
 import os
 
 
-# When output is not to a terminal, force UTF-8 output.
-# More info: http://wiki.python.org/moin/PrintFails
-#
-if not (hasattr(sys.stdout, "isatty") and sys.stdout.isatty()):
-    import codecs
-    sys.stdout = codecs.getwriter("utf-8")(sys.stdout)
-
-
 def rst_to_plain_text(text):
     """Minimal converter of reStructuredText to plain text.
 
