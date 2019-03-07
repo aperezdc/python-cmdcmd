@@ -10,7 +10,6 @@
 Utilities to build command-line action-based programs.
 """
 
-from . import util
 from inspect import isclass
 from keyword import iskeyword
 import optparse
@@ -279,12 +278,6 @@ class Command(object):
         (``arg?``) or repeated (``arg+``, ``arg*``). Those will be passed as
         keyword arguments to the command's :meth:`run` method.
     :cvar aliases: Other names which may be used to refer to this command.
-    :cvar locking: Either a tuple/list with the names of the locks that
-        the command will be using. Just a name will ensure that the lock is
-        held before calling :meth:`run()`, appending a ``?`` sign to the
-        name will just ensure that the lock is released. Alternatively, you
-        can just set the variable to ``True`` and just a single lock will be
-        used.
     :cvar exceptions: Either a single class or a list of classes of
         exceptions which will cause the command to exit with non-zero
         status, printing just the exception message to standard error
@@ -294,7 +287,6 @@ class Command(object):
     takes_args = ()
     aliases = ()
     hidden = False
-    locking = None
     exceptions = None
     __cmd_param__ = {}
 
@@ -303,19 +295,6 @@ class Command(object):
             "No help message set for {!r}".format(self)
         self.supported_std_options = []
         self.param = param
-
-        if self.locking:
-            if self.locking is True:
-                # FIXME: Do not assume that "lock" is the default lock name!
-                #        This ties this to cmd.util.Lock implementation!
-                self.locking = ("lock",)
-
-            self.lock = util.Bag()
-            for name in self.locking:
-                if name.endswith("?"):
-                    name = name[:-1]
-
-                self.lock[name] = util.Lock(param["cmd:tool_name"], name)
 
     def _usage(self):
         """Return a single-line grammar for this action.
@@ -334,30 +313,6 @@ class Command(object):
             result += aname + " "
         result = result[:-1]  # Remove last space
         return result
-
-    def acquire_locks(self):
-        """Acquire locks stated as mandatory for running the command.
-        """
-        if not self.locking:
-            return
-
-        for name in self.locking:
-            if name.endswith("?"):
-                continue
-            self.lock[name].lock()
-
-    def release_locks(self):
-        """Release all remaining locks after running the command.
-        """
-        if not self.locking:
-            return
-
-        for name in self.locking:
-            if name.endswith("?"):
-                name = name[:-1]
-            lock = self.lock[name]
-            if lock.locked:
-                lock.unlock()
 
     def prepare(self):
         """Prepare for execution.
@@ -466,7 +421,6 @@ class Command(object):
     def run_direct(self, *args, **kwargs):
         """Call run directly with objects (without parsing an argv list).
         """
-        self.acquire_locks()
         try:
             try:
                 # If prepare() returns something, it is assumed to be a non-zero
@@ -486,9 +440,8 @@ class Command(object):
                 else:
                     raise
         finally:
-            # Ensure that cleanup() is executed and the locks released.
+            # Ensure that cleanup() is executed.
             self.cleanup()
-            self.release_locks()
 
         return ret
 
@@ -715,63 +668,6 @@ class cmd_help(Command):
     run = ignore_pipe_err(run)
 
 
-class cmd_unlock(Command):
-    """Clean up lock files (use with care!)
-
-    When a tool uses some lock file to ensure that only a sigle instance
-    is running, stray lock files might be left behind in the event of an
-    unexpected abortion of a prior execution. In that case, you may want
-    to use the "unlock" command to remove stray lock files.
-    """
-    aliases = ("--unlock",)
-
-    takes_options = (
-        Option("force", help="Clean locks even if a process is using them"),
-    )
-
-    def run(self, force=False):
-        from errno import ESRCH
-
-        for path in self.param.get("cmd:lock_files", ()):
-            if not os.path.exists(path):
-                continue
-            if not os.path.isfile(path):
-                sys.stderr.write("not a regular file: {!s}\n".format(path))
-                continue
-
-            if not force:
-                # Do some sanity check
-
-                try:
-                    lockfd = open(path, "rU")
-                    pid = int(lockfd.readline())
-                    lockfd.close()
-
-                    # Just call os.kill(), if the process is not found, then
-                    # ESRCH is handled below -- and the check succeds. When
-                    # execution continues the process exists.
-                    #
-                    os.kill(pid, 0)
-
-                    sys.stderr.write("{!s}: skipping (PID {} alive), --force might help\n".format(path, pid))
-                except ValueError as e:
-                    sys.stderr.write("{!s}: malformed PID ({!s}), --force might help\n".format(path, e))
-                    continue
-                except IOError as e:
-                    sys.stderr.write("{!s}: cannot read ({!s}), --force might help\n".format(path, e))
-                    continue
-                except OSError as e:
-                    if e.errno != ESRCH:
-                        sys.stderr.write("{!s}: cannot ping PID {} (wrong credentials?)\n".format(path, pid))
-                        continue
-
-            # Finally, try to remove the file
-            try:
-                os.remove(path)
-            except IOError as e:
-                sys.stderr.write("{!s}: cannot remove ({!s}) (wrong credentials?\n".format(path, e))
-
-
 _cli_top_level_help_text = """\
 Usage: %s <command> [flags...] [arguments...]
 
@@ -881,26 +777,8 @@ class CLI(object):
 
         self.add_commands(commands, **param)
 
-        # Add our built-in commands ("help", and "unlock", for now)
-        lockfiles = self.__gather_lock_files(self.name)
-        if lockfiles:
-            param["cmd:lock_files"] = lockfiles
-            self.add_command(cmd_unlock, **param)
-
+        # Add our built-in commands ("help" for now)
         self.add_command(cmd_help, **param)
-
-    def __gather_lock_files(self, process):
-        files = set()
-        for command in self._registry.values():
-            if not command.locking:
-                continue
-            if command.locking is True:
-                files.add(util.Lock.file_path(process))
-                continue
-            for name in command.locking:
-                files.add(util.Lock.file_path(process, name))
-
-        return files
 
     def add_command(self, command, **param):
         """Adds a single command to the command registry.
