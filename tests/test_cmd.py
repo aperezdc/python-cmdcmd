@@ -10,7 +10,7 @@ Test suite for the cmd.cmd module.
 """
 
 import unittest
-from . import cmd
+from cmdcmd import cmd
 from inspect import isclass
 
 

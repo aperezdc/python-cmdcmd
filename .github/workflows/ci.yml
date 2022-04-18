@@ -6,11 +6,11 @@ on:
 
 jobs:
   test:
-    name: Test
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: ['3.5', '3.x']
+        python-version: ['3.5', '3.10']
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -20,17 +20,18 @@ jobs:
           python-version: ${{ matrix.python-version }}
       - name: Install Dependencies
         run: |
-          pip install -e '.'
-          pip install pytest pytest-cov
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade tox tox-gh-actions
       - name: Run Tests
         run: |
-          pytest -v --cov --cov-branch --cov-report term-missing
+          python -m tox
       - name: Coveralls
         uses: AndreMiras/coveralls-python-action@v20201129
         with:
           flag-name: pytest-${{ matrix.python-version }}
           parallel: true
   finish:
+    name: Coveralls
     needs: test
     runs-on: ubuntu-20.04
     steps:
@@ -38,3 +39,22 @@ jobs:
         uses: AndreMiras/coveralls-python-action@v20201129
         with:
           parallel-finished: true
+  build:
+    name: Package
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Python
+        uses: actions/setup-python@v3
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          python -m pip install --upgrade build check-wheel-contents twine
+      - name: Build Package
+        run: |
+          python -m build --sdist --wheel .
+      - name: Check Package
+        run: |
+          check-wheel-contents dist/*.whl
+          python -m twine check dist/*
