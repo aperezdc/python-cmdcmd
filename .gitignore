@@ -1,3 +1,4 @@
 *.py[cod]
-.coverage
-*.egg-info/
+/.coverage
+/*.egg-info/
+/.hypothesis/
