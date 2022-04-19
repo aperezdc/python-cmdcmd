@@ -6,25 +6,6 @@
 #
 # Distributed under terms of the MIT license.
 
-from setuptools import setup
-
-
-setup(
-    extras_require={
-        "dev": [
-            # Please keep in alphabetical order.
-            "coverage",
-            "flake8-author",
-            "flake8-builtins",
-            "flake8-comprehensions",
-            "flake8-debugger",
-            "flake8-deprecated",
-            "flake8-diff",
-            "flake8-dodgy",
-            "flake8-double-quotes",
-            "flake8-pep3101",
-            "flake8-tuple",
-            "green",
-        ],
-    },
-)
+if __name__ == "__main__":
+    from setuptools import setup
+    setup()

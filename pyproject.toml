@@ -1,3 +1,26 @@
 [build-system]
 requires = ["setuptools>=42"]
 build-backend = "setuptools.build_meta"
+
+[tool.coverage.run]
+branch = true
+parallel = true
+relative_files = true
+source = ["cmdcmd", "tests"]
+
+[tool.coverage.paths]
+source = ["src", ".nox/*/site-packages"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 29
+
+[tool.flakeheaven]
+format = "colored"
+show_source = true
+max_line_length = 120
+
+[tool.flakeheaven.plugins]
+pycodestyle = ["+*"]
+pyflakes = ["+*"]
