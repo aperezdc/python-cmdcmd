@@ -6,15 +6,15 @@ build-backend = "setuptools.build_meta"
 branch = true
 parallel = true
 relative_files = true
-source = ["cmdcmd", "tests"]
+source = ["cmdcmd"]
 
 [tool.coverage.paths]
-source = ["src", ".nox/*/site-packages"]
+source = ["src", "*/site-packages"]
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 29
+fail_under = 25
 
 [tool.flakeheaven]
 format = "colored"
