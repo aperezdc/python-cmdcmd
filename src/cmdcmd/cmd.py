@@ -43,7 +43,7 @@ class CommandError(RuntimeError):
     """An error occured running a command."""
 
 
-class Option(object):
+class Option:
     """Describes a command line option.
 
     :ivar _short_name: If the option has a single-letter alias, this is
@@ -259,7 +259,7 @@ def _unsquish_command_name(identifier):
     return identifier[4:].replace("_", "-")
 
 
-class Command(object):
+class Command:
     """Base class for commands.
 
     You should define subclasses of this to create a set of commands which
@@ -291,7 +291,7 @@ class Command(object):
 
     def __init__(self, **param):
         assert self.__doc__ != Command.__doc__, \
-            "No help message set for {!r}".format(self)
+            "No help message set for {0!r}".format(self)
         self.supported_std_options = []
         self.param = param
 
@@ -310,8 +310,7 @@ class Command(object):
             elif aname[-1] == "*":
                 aname = "[" + aname[:-1] + "...]"
             result += aname + " "
-        result = result[:-1]  # Remove last space
-        return result
+        return result[:-1]  # Remove last space
 
     def prepare(self):
         """Prepare for execution.
@@ -319,7 +318,6 @@ class Command(object):
         This is a hook method intended to be redefined in subclasses.
         By default it does nothing.
         """
-        pass
 
     def cleanup(self):
         """Clean up after execution.
@@ -327,7 +325,6 @@ class Command(object):
         This is a hook method intended to be redefined in subclasses.
         By default it does nothing.
         """
-        pass
 
     def run(self):
         """Actually run the command.
@@ -338,7 +335,7 @@ class Command(object):
         Return 0 or None if the command was successful, or a non-zero shell
         error code if not. It is okay for this method to raise exceptions.
         """
-        raise NotImplementedError("No implementation of command {!r}".format(self.name()))
+        raise NotImplementedError("No implementation of command {0!r}".format(self.name()))
 
     def get_config_file(self):
         """Guess the name of the configuration file.
@@ -428,7 +425,7 @@ class Command(object):
                 ret = self.prepare()
                 if not ret:
                     ret = self.run(*args, **kwargs)
-            except Exception:
+            except Exception:  # noqa: PIE786
                 # In this case, don't even bother calling sys.exc_info()
                 if self.exceptions is None:
                     raise
@@ -460,7 +457,7 @@ class Command(object):
         """
         doc = self.help()
         if doc is None:
-            raise NotImplementedError("sorry, no detailed help yet for {!r}".format(self.name()))
+            raise NotImplementedError("sorry, no detailed help yet for {0!r}".format(self.name()))
 
         # Extract the summary (purpose) and sections out from the text
         purpose, sections, order = self._get_help_parts(doc)
@@ -473,11 +470,11 @@ class Command(object):
 
         # The header is the purpose and usage
         result = ""
-        result += ":Purpose: {!s}\n".format(purpose)
+        result += ":Purpose: {0!s}\n".format(purpose)
         if usage.find("\n") >= 0:
-            result += ":Usage:\n{!s}\n".format(usage)
+            result += ":Usage:\n{0!s}\n".format(usage)
         else:
-            result += ":Usage:   {!s}\n".format(usage)
+            result += ":Usage:   {0!s}\n".format(usage)
         result += "\n"
 
         # Add the options
@@ -501,17 +498,17 @@ class Command(object):
             if None in sections:
                 text = sections.pop(None)
                 text = "\n  ".join(text.splitlines())
-                result += ":Description:\n  {!s}\n\n".format(text)
+                result += ":Description:\n  {0!s}\n\n".format(text)
 
             # Add the custom sections (e.g. Examples). Note that there's no need
             # to indent these as they must be indented already in the source.
             if sections:
                 for label in order:
                     if label in sections:
-                        result += ":{!s}:\n{!s}\n".format(label, sections[label])
+                        result += ":{0!s}:\n{1!s}\n".format(label, sections[label])
                 result += "\n"
         else:
-            result += "See \"help {!s}\" for more details and examples.\n\n".format(self.name())
+            result += "See \"help {0!s}\" for more details and examples.\n\n".format(self.name())
 
         # Add the aliases, source (plug-in) and see also links, if any
         if self.aliases:
@@ -543,7 +540,7 @@ class Command(object):
                     sections[label] = section
 
         lines = text.rstrip().splitlines()
-        summary = lines.pop(0) if len(lines) else ""
+        summary = lines.pop(0) if lines else ""
         sections = {}
         order = []
         label, section = None, ""
@@ -602,25 +599,25 @@ def _match_argform(cmd, takes_args, args):
                 argdict[argname + "_list"] = ()
         elif ap[-1] == "+":
             if not args:
-                raise CommandError("command {!r} needs one or more {!s}".format(cmd, argname.upper()))
+                raise CommandError("command {0!r} needs one or more {1!s}".format(cmd, argname.upper()))
             else:
                 argdict[argname + "_list"] = args[:]
                 args = []
         elif ap[-1] == "$":  # all but one
             if len(args) < 2:
-                raise CommandError("command {!r} needs one or more {!s}".format(cmd, argname.upper()))
+                raise CommandError("command {0!r} needs one or more {1!s}".format(cmd, argname.upper()))
             argdict[argname + "_list"] = args[:-1]
             args[:-1] = []
         else:
             # just a plain arg
             argname = ap
             if not args:
-                raise CommandError("command {!r} requires argument {!s}".format(cmd, argname.upper()))
+                raise CommandError("command {0!r} requires argument {1!s}".format(cmd, argname.upper()))
             else:
                 argdict[argname] = args.pop(0)
 
     if args:
-        raise CommandError("extra argument to command {!r}: {!s}".format(cmd, args[0]))
+        raise CommandError("extra argument to command {0!r}: {1!s}".format(cmd, args[0]))
 
     return argdict
 
@@ -639,11 +636,11 @@ def ignore_pipe_err(func):
         except IOError as e:
             if getattr(e, "errno", None) is None:
                 raise
+            # Win32 raises IOError with errno=0 on a broken pipe
+            if sys.platform == "win32" and (e.errno not in (0, errno.EINVAL)):
+                raise
             if e.errno != errno.EPIPE:
-                # Win32 raises IOError with errno=0 on a broken pipe
-                if sys.platform != "win32" or (e.errno not in (0, errno.EINVAL)):
-                    raise
-            pass
+                raise
         except KeyboardInterrupt:
             pass
     return ignore_pipe
@@ -668,17 +665,17 @@ class cmd_help(Command):
 
 
 _cli_top_level_help_text = """\
-Usage: %s <command> [flags...] [arguments...]
+Usage: {0!s} <command> [flags...] [arguments...]
 
 Available commands:
-%s
+{1!s}
 Getting more help:
    help commands   Get a list of available commands.
    help <command>  Show help on the given <command>.
 """
 
 
-class CLI(object):
+class CLI:
     """Groups commands and provides a command line interface to them.
 
     :ivar _registry: Dictionary containing all registered commands, mapping
@@ -740,7 +737,7 @@ class CLI(object):
             conffile = param["cli_config_file_path"]
             del param["cli_config_file_path"]
         else:
-            conffile = "/etc/{!s}.conf".format(toolname)
+            conffile = "/etc/{0!s}.conf".format(toolname)
 
         return CLI(name=toolname, config_file=conffile, config_env_var=envvar,
                    commands=modname, **param)
@@ -829,8 +826,6 @@ class CLI(object):
         else:
             indent = ""
 
-        cmdformat = indent + "%-*s  %s\n"
-
         for name in cmdnames:
             cmd = self.get_command(name)
             helptext = cmd.help()
@@ -839,7 +834,7 @@ class CLI(object):
             else:
                 firstline = ""
 
-            result.append(cmdformat % (max_name, name, firstline))
+            result.append("{0!s}{1!s:{2}}  {3!s}\n".format(indent, name, max_name, firstline))
 
         return "".join(result)
 
@@ -850,8 +845,7 @@ class CLI(object):
             ``hidden-commands`` strings.
         """
         if topic == "help":
-            text = _cli_top_level_help_text % (self.name,
-                                               self._output_help_commands(indent=3))
+            text = _cli_top_level_help_text.format(self.name, self._output_help_commands(indent=3))
         elif topic == "commands":
             text = self._output_help_commands()
         elif topic == "hidden-commands":
@@ -859,7 +853,7 @@ class CLI(object):
         elif self.has_command(topic):
             text = self.get_command(topic).get_help_text()
         else:
-            text = "{!s}: Unavailable help topic '{!s}'\n".format(self.name, topic)
+            text = "{0!s}: Unavailable help topic '{1!s}'\n".format(self.name, topic)
 
         sys.stdout.write(text)
 
@@ -872,10 +866,7 @@ class CLI(object):
         """
         assert self._registry
 
-        command = None
-        if name in self._registry:
-            command = self._registry[name]
-
+        command = self._registry.get(name, None)
         if command:
             return command(**command.__cmd_param__)
         elif alias:
@@ -883,7 +874,7 @@ class CLI(object):
                 if name in command.aliases:
                     return command(**command.__cmd_param__)
 
-        raise KeyError("No such command {!r}".format(name))
+        raise KeyError("No such command {0!r}".format(name))
 
     def has_command(self, name, alias=True):
         """Check whether a command exists given its name.
@@ -917,12 +908,12 @@ class CLI(object):
             cmd = argv and argv.pop(0) or "help"
             cmd = self.get_command(cmd)
         except KeyError:
-            return "{!s}: command '{!s}' does not exist.".format(self.name, cmd)
+            return "{0!s}: command '{1!s}' does not exist.".format(self.name, cmd)
 
         try:
             return cmd.run_argv_aliases(argv) or 0
         except CommandError as e:
-            return "{!s}: {!s}".format(self.name, e)
+            return "{0!s}: {1!s}".format(self.name, e)
 
 
 def main(toolname=None, argv=None, **kw):
@@ -938,7 +929,8 @@ def main(toolname=None, argv=None, **kw):
     """
     if toolname is None:
         if argv is None:
-            toolname = os.path.basename(sys.argv[0])
+            from pathlib import Path
+            toolname = Path(sys.argv[0]).name
             argv = sys.argv[1:]
         else:
             toolname = argv.pop()
