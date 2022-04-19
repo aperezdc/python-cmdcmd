@@ -38,6 +38,7 @@ def lint(session):
                     "flake8-pie",
                     "flake8-simplify",
                     "flake8-string-format",
+                    "flake8-type-checking",
                     "flake8-use-pathlib",
                     )
     args = session.posargs or ("lint", "src", "tests", "noxfile.py", "README.rst")

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# vim:fenc=utf-8
 #
 # Copyright © 2010-2017 Adrian Perez <aperez@igalia.com>
 #
