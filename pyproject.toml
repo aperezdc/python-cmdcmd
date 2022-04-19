@@ -20,7 +20,9 @@ fail_under = 29
 format = "colored"
 show_source = true
 max_line_length = 120
+noqa-require-code = true
 
 [tool.flakeheaven.plugins]
-pycodestyle = ["+*"]
+pycodestyle = ["+*", "-E501", "-E722"]
 pyflakes = ["+*"]
+"flake8-*" = ["+*"]

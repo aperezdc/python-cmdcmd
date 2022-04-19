@@ -1,3 +1,5 @@
+# noqa: INP001
+
 import nox
 from itertools import product
 from pathlib import Path
@@ -21,8 +23,24 @@ def clean(session):
 @nox.session(python=py_default)
 def lint(session):
     """Run static code checks."""
-    session.install("flakeheaven")
-    args = session.posargs or ("lint", "src", "tests", "noxfile.py")
+    session.install("flakeheaven",
+                    "flake8-2020",
+                    "flake8-bugbear",
+                    "flake8-builtins",
+                    "flake8-comprehensions",
+                    "flake8-debugger",
+                    "flake8-eradicate",
+                    "flake8-implicit-str-concat",
+                    "flake8-multiline-containers",
+                    "flake8-no-pep420",
+                    "flake8-noqa",
+                    "flake8-pep3101",
+                    "flake8-pie",
+                    "flake8-simplify",
+                    "flake8-string-format",
+                    "flake8-use-pathlib",
+                    )
+    args = session.posargs or ("lint", "src", "tests", "noxfile.py", "README.rst")
     session.run("flakeheaven", *args)
 
 
