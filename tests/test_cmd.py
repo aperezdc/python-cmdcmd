@@ -1,17 +1,18 @@
+# noqa: INP001
+#
 # -*- coding: utf-8 -*-
-# vim:fenc=utf-8
 #
 # Copyright © 2012-2017 Adrian Perez <aperez@igalia.com>
 #
 # Distributed under terms of the MIT license.
 
 """
-Test suite for the cmd.cmd module.
+Test suite for the cmdcmd.cmd module.
 """
 
-import unittest
 from cmdcmd import cmd
 from inspect import isclass
+from pytest import raises
 
 
 class cmd_foo(cmd.Command):
@@ -34,22 +35,26 @@ class cmd_spam(cmd.Command):
         return 0
 
 
-class TestCmdCommand(unittest.TestCase):
+class TestCmdCommand:
 
     def assertIsCommand(self, command, cmdclass=None):
-        self.assertFalse(isclass(command))
-        self.assertTrue(isinstance(command, cmd.Command))
+        assert not isclass(command)
+        assert isinstance(command, cmd.Command)
         if cmdclass is not None:
-            self.assertTrue(isinstance(command, cmdclass))
+            assert isinstance(command, cmdclass)
 
     def test_get_unexistant_cmd(self):
         cli = cmd.CLI("foobar", commands=(cmd_foo, cmd_bar))
-        self.assertRaises(KeyError, cli.get_command, "baz", True)
-        self.assertRaises(KeyError, cli.get_command, "baz", False)
+        with raises(KeyError):
+            cli.get_command("baz", True)
+        with raises(KeyError):
+            cli.get_command("baz", False)
         # Make sure adding a command with aliases does not messes things up
         cli.add_command(cmd_spam)
-        self.assertRaises(KeyError, cli.get_command, "baz", True)
-        self.assertRaises(KeyError, cli.get_command, "baz", False)
+        with raises(KeyError):
+            cli.get_command("baz", True)
+        with raises(KeyError):
+            cli.get_command("baz", False)
 
     def test_get_cmd(self):
         cli = cmd.CLI("foobar", commands=(cmd_foo, cmd_bar))
@@ -61,4 +66,5 @@ class TestCmdCommand(unittest.TestCase):
         self.assertIsCommand(cli.get_command("eggs", True), cmd_spam)
         self.assertIsCommand(cli.get_command("spam", True), cmd_spam)
         self.assertIsCommand(cli.get_command("spam", False), cmd_spam)
-        self.assertRaises(KeyError, cli.get_command, "eggs", False)
+        with raises(KeyError):
+            cli.get_command("eggs", False)

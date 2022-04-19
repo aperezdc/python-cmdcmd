@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# vim:fenc=utf-8
 #
 # Copyright © 2017 Adrian Perez <aperez@igalia.com>
 # Copyright © 2010 Igalia S.L.
@@ -54,7 +53,7 @@ class Option(object):
 
     OPTIONS = {}
 
-    def __init__(self, name, help="", type=None, argname=None,  # noqa: B002
+    def __init__(self, name, help="", type=None, argname=None,  # noqa: A002
                  short_name=None, param_name=None, custom_callback=None,
                  hidden=False):
         """Make a new action option.
@@ -369,7 +368,7 @@ class Command(object):
 
     name = classmethod(name)
 
-    def help(self):
+    def help(self):  # noqa: A003
         """Return help message for this action."""
         from inspect import getdoc
         if self.__doc__ is Command.__doc__:
