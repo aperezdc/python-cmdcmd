@@ -429,8 +429,8 @@ class Command(object):
                 ret = self.prepare()
                 if not ret:
                     ret = self.run(*args, **kwargs)
-            except:
-                # In this case, don't even other of calling sys.exc_info()
+            except Exception:
+                # In this case, don't even bother calling sys.exc_info()
                 if self.exceptions is None:
                     raise
 
