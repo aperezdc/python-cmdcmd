@@ -9,6 +9,7 @@
 Utilities to build command-line action-based programs.
 """
 
+from enum import Enum
 from inspect import isclass
 from keyword import iskeyword
 import optparse
@@ -64,10 +65,16 @@ class Option:
 
         :param help: help message displayed in command help
 
-        :param type: function called to parse the option argument, or
-            None (default) if this option doesn't take an argument.
+        :param type: type of the option argument, which must be callable
+            with a string value to convert a textual representation into
+            a value of the type, or None (default) if this option doesn't
+            take an argument.
 
-        :param argname: name of option argument, if any
+        :param argname: name of the option argument, if any. Must be ``None``
+            for options that do not take arguments. If not specified, the
+            default is ``"ARG"``, or the name of the class if the `type` is
+            an ``Enum``. The argument name is always converted to uppercase
+            automatically.
 
         :param short_name: short option code for use with a single -, e.g.
             short_name="v" to enable parsing of -v.
@@ -80,6 +87,19 @@ class Option:
             (option, name, new_value, parser).
         :param hidden: If True, the option should be hidden in help and
             documentation.
+
+        Using ``Enum`` subtypes is supported:
+
+        >>> from cmdcmd import Option
+        >>> from enum import Enum
+        >>>
+        >>> class Protocol(Enum):
+        ...     TCP = "tcp"
+        ...     UDP = "udp"
+        ...
+        >>> Option("protocol", type=Protocol)
+        <cmdcmd.cmd.Option object at 0x...>
+        >>>
         """
         self.name = name
         self.help = help
@@ -88,8 +108,10 @@ class Option:
         if type is None:
             if argname:
                 raise ValueError("argname not valid for booleans")
-        elif argname is None:
-            argname = "ARG"
+        else:
+            if argname is None:
+                argname = type.__name__ if issubclass(type, Enum) else "ARG"
+            argname = argname.upper()
         self.argname = argname
         if param_name is None:
             self._param_name = self.name.replace("-", "_")
@@ -141,10 +163,19 @@ class Option:
                               callback=self._optparse_bool_callback,
                               callback_args=(False,),
                               help=optparse.SUPPRESS_HELP, *negation_strings)
+        elif issubclass(optargfn, Enum):
+            values = (m.value for m in optargfn.__members__.values())
+            parser.add_option(action="callback",
+                              callback=self._optparse_callback,
+                              type="choice", choices=tuple(values),
+                              metavar=self.argname,
+                              help=_help,
+                              default=OptionParser.DEFAULT_VALUE,
+                              *option_strings)
         else:
             parser.add_option(action="callback",
                               callback=self._optparse_callback,
-                              type="string", metavar=self.argname.upper(),
+                              type="string", metavar=self.argname,
                               help=_help,
                               default=OptionParser.DEFAULT_VALUE,
                               *option_strings)
@@ -165,10 +196,7 @@ class Option:
 
         :return: an iterator of (name, short_name, argname, help)
         """
-        argname = self.argname
-        if argname is not None:
-            argname = argname.upper()
-        yield self.name, self.short_name(), argname, self.help
+        yield self.name, self.short_name(), self.argname, self.help
 
 
 class ListOption(Option):
@@ -189,7 +217,7 @@ class ListOption(Option):
             option_strings.append("-" + short_name)
         parser.add_option(action="callback",
                           callback=self._optparse_callback,
-                          type="string", metavar=self.argname.upper(),
+                          type="string", metavar=self.argname,
                           help=self.help, default=[],
                           *option_strings)
 
