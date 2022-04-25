@@ -6,8 +6,9 @@
 #
 # Distributed under terms of the MIT license.
 
-from cmdcmd import cmd
 from enum import Enum
+
+from cmdcmd import cmd
 
 
 class Protocol(Enum):

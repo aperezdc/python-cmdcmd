@@ -1,15 +1,18 @@
 # noqa: INP001
 
-import nox
 from itertools import product
 from pathlib import Path
+
+import nox
 
 py_default = "3.10"
 py_envs = (py_default, "3.6")
 
 nox.options.error_on_external_run = True
 nox.options.sessions = (
-    "clean", *map("-".join, product(("test",), py_envs)), "report",
+    "clean",
+    *map("-".join, product(("test",), py_envs)),
+    "report",
 )
 
 
@@ -23,26 +26,37 @@ def clean(session):
 @nox.session(python=py_default)
 def lint(session):
     """Run static code checks."""
-    session.install("flakeheaven",
-                    "flake8-2020",
-                    "flake8-bugbear",
-                    "flake8-builtins",
-                    "flake8-comprehensions",
-                    "flake8-debugger",
-                    "flake8-eradicate",
-                    "flake8-implicit-str-concat",
-                    "flake8-multiline-containers",
-                    "flake8-no-pep420",
-                    "flake8-noqa",
-                    "flake8-pep3101",
-                    "flake8-pie",
-                    "flake8-simplify",
-                    "flake8-string-format",
-                    "flake8-type-checking",
-                    "flake8-use-pathlib",
-                    )
+    session.install(
+        "flakeheaven",
+        "flake8-2020",
+        "flake8-black",
+        "flake8-bugbear",
+        "flake8-builtins",
+        "flake8-comprehensions",
+        "flake8-debugger",
+        "flake8-eradicate",
+        "flake8-implicit-str-concat",
+        "flake8-isort",
+        "flake8-multiline-containers",
+        "flake8-no-pep420",
+        "flake8-noqa",
+        "flake8-pep3101",
+        "flake8-pie",
+        "flake8-simplify",
+        "flake8-string-format",
+        "flake8-type-checking",
+        "flake8-use-pathlib",
+    )
     args = session.posargs or ("lint", "src", "tests", "noxfile.py", "README.rst")
     session.run("flakeheaven", *args)
+
+
+@nox.session(python=py_default)
+def black(session):
+    """Reformat code using Black."""
+    session.install("black")
+    args = session.posargs or ("src", "tests", "noxfile.py")
+    session.run("black", *args)
 
 
 @nox.session(python=py_envs)
@@ -50,8 +64,9 @@ def test(session):
     """Run unit tests, produce coverage data."""
     session.notify("report")
     session.install("coverage[toml]<6.3", "pytest", "xdoctest", "pygments", ".")
-    session.run("coverage", "run", "-m", "pytest", "--xdoctest", "-vv",
-                *session.posargs)
+    session.run(
+        "coverage", "run", "-m", "pytest", "--xdoctest", "-vv", *session.posargs
+    )
 
 
 @nox.session(python=py_default)

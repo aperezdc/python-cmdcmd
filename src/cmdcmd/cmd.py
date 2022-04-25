@@ -9,13 +9,13 @@
 Utilities to build command-line action-based programs.
 """
 
+import optparse
+import os
+import sys
+import types
 from enum import Enum
 from inspect import isclass
 from keyword import iskeyword
-import optparse
-import types
-import sys
-import os
 
 
 def rst_to_plain_text(text):
@@ -27,6 +27,7 @@ def rst_to_plain_text(text):
     :rtype: str
     """
     import re
+
     lines = text.splitlines()
     result = []
     for line in lines:
@@ -50,13 +51,22 @@ class Option:
     :ivar _short_name: If the option has a single-letter alias, this is
         defined. Otherwise this is None.
     """
+
     STD_OPTIONS = {}
 
     OPTIONS = {}
 
-    def __init__(self, name, help="", type=None, argname=None,  # noqa: A002
-                 short_name=None, param_name=None, custom_callback=None,
-                 hidden=False):
+    def __init__(
+        self,
+        name,
+        help="",  # noqa: A002
+        type=None,  # noqa: A002
+        argname=None,
+        short_name=None,
+        param_name=None,
+        custom_callback=None,
+        hidden=False,
+    ):
         """Make a new action option.
 
         :param name: regular name of the command, used in the double-dash
@@ -129,8 +139,9 @@ class Option:
         """Set the short name of the option."""
         self._short_name = short_name
 
-    short_name = property(get_short_name, set_short_name,
-                          doc="Short name of the option")
+    short_name = property(
+        get_short_name, set_short_name, doc="Short name of the option"
+    )
 
     def get_negation_name(self):
         """Return the negated name of the option."""
@@ -139,8 +150,7 @@ class Option:
         else:
             return "no-" + self.name
 
-    negation_name = property(get_negation_name,
-                             doc="Negated name of the option")
+    negation_name = property(get_negation_name, doc="Negated name of the option")
 
     def add_option(self, parser, short_name):
         """Add this option to an optparse parser."""
@@ -153,32 +163,43 @@ class Option:
             _help = self.help
         optargfn = self.type
         if optargfn is None:
-            parser.add_option(action="callback",
-                              callback=self._optparse_bool_callback,
-                              callback_args=(True,),
-                              help=_help,
-                              *option_strings)
+            parser.add_option(
+                action="callback",
+                callback=self._optparse_bool_callback,
+                callback_args=(True,),
+                help=_help,
+                *option_strings
+            )
             negation_strings = ["--" + self.get_negation_name()]
-            parser.add_option(action="callback",
-                              callback=self._optparse_bool_callback,
-                              callback_args=(False,),
-                              help=optparse.SUPPRESS_HELP, *negation_strings)
+            parser.add_option(
+                action="callback",
+                callback=self._optparse_bool_callback,
+                callback_args=(False,),
+                help=optparse.SUPPRESS_HELP,
+                *negation_strings
+            )
         elif issubclass(optargfn, Enum):
             values = (m.value for m in optargfn.__members__.values())
-            parser.add_option(action="callback",
-                              callback=self._optparse_callback,
-                              type="choice", choices=tuple(values),
-                              metavar=self.argname,
-                              help=_help,
-                              default=OptionParser.DEFAULT_VALUE,
-                              *option_strings)
+            parser.add_option(
+                action="callback",
+                callback=self._optparse_callback,
+                type="choice",
+                choices=tuple(values),
+                metavar=self.argname,
+                help=_help,
+                default=OptionParser.DEFAULT_VALUE,
+                *option_strings
+            )
         else:
-            parser.add_option(action="callback",
-                              callback=self._optparse_callback,
-                              type="string", metavar=self.argname,
-                              help=_help,
-                              default=OptionParser.DEFAULT_VALUE,
-                              *option_strings)
+            parser.add_option(
+                action="callback",
+                callback=self._optparse_callback,
+                type="string",
+                metavar=self.argname,
+                help=_help,
+                default=OptionParser.DEFAULT_VALUE,
+                *option_strings
+            )
 
     def _optparse_bool_callback(self, option, opt_str, value, parser, bool_v):
         setattr(parser.values, self._param_name, bool_v)
@@ -215,11 +236,15 @@ class ListOption(Option):
         option_strings = ["--" + self.name]
         if short_name is not None:
             option_strings.append("-" + short_name)
-        parser.add_option(action="callback",
-                          callback=self._optparse_callback,
-                          type="string", metavar=self.argname,
-                          help=self.help, default=[],
-                          *option_strings)
+        parser.add_option(
+            action="callback",
+            callback=self._optparse_callback,
+            type="string",
+            metavar=self.argname,
+            help=self.help,
+            default=[],
+            *option_strings
+        )
 
     def _optparse_callback(self, option, opt, value, parser):
         values = getattr(parser.values, self._param_name)
@@ -263,10 +288,8 @@ def _global_option(name, **kwargs):
 
 
 # Declare standard options
-_standard_option("help", short_name="h",
-                 help="Show help message")
-_standard_option("usage",
-                 help="Show usage message and options")
+_standard_option("help", short_name="h", help="Show help message")
+_standard_option("usage", help="Show usage message and options")
 
 
 def _squish_command_name(name):
@@ -310,6 +333,7 @@ class Command:
         status, printing just the exception message to standard error
         instead of a full traceback.
     """
+
     takes_options = ()
     takes_args = ()
     aliases = ()
@@ -318,8 +342,9 @@ class Command:
     __cmd_param__ = {}
 
     def __init__(self, **param):
-        assert self.__doc__ != Command.__doc__, \
-            "No help message set for {0!r}".format(self)
+        assert self.__doc__ != Command.__doc__, "No help message set for {0!r}".format(
+            self
+        )
         self.supported_std_options = []
         self.param = param
 
@@ -363,7 +388,9 @@ class Command:
         Return 0 or None if the command was successful, or a non-zero shell
         error code if not. It is okay for this method to raise exceptions.
         """
-        raise NotImplementedError("No implementation of command {0!r}".format(self.name()))
+        raise NotImplementedError(
+            "No implementation of command {0!r}".format(self.name())
+        )
 
     def get_config_file(self):
         """Guess the name of the configuration file.
@@ -396,6 +423,7 @@ class Command:
     def help(self):  # noqa: A003
         """Return help message for this action."""
         from inspect import getdoc
+
         if self.__doc__ is Command.__doc__:
             return None
         return getdoc(self)
@@ -443,8 +471,7 @@ class Command:
         return self.run_direct(**all_cmd_args)
 
     def run_direct(self, *args, **kwargs):
-        """Call run directly with objects (without parsing an argv list).
-        """
+        """Call run directly with objects (without parsing an argv list)."""
         try:
             try:
                 # If prepare() returns something, it is assumed to be a non-zero
@@ -485,7 +512,9 @@ class Command:
         """
         doc = self.help()
         if doc is None:
-            raise NotImplementedError("sorry, no detailed help yet for {0!r}".format(self.name()))
+            raise NotImplementedError(
+                "sorry, no detailed help yet for {0!r}".format(self.name())
+            )
 
         # Extract the summary (purpose) and sections out from the text
         purpose, sections, order = self._get_help_parts(doc)
@@ -515,7 +544,7 @@ class Command:
             result += ":" + options
         elif options.startswith("options:"):
             # Python 2.4 version of optparse
-            result += ":Options:" + options[len("options:"):]
+            result += ":Options:" + options[len("options:") :]
         else:
             result += options
         result += "\n"
@@ -536,7 +565,9 @@ class Command:
                         result += ":{0!s}:\n{1!s}\n".format(label, sections[label])
                 result += "\n"
         else:
-            result += "See \"help {0!s}\" for more details and examples.\n\n".format(self.name())
+            result += 'See "help {0!s}" for more details and examples.\n\n'.format(
+                self.name()
+            )
 
         # Add the aliases, source (plug-in) and see also links, if any
         if self.aliases:
@@ -559,6 +590,7 @@ class Command:
             All text found outside a named section is assigned to the
             default section which is given the key of None.
         """
+
         def save_section(sections, order, label, section):
             if len(section) > 0:
                 if label in sections:
@@ -606,7 +638,9 @@ def parse_args(cmd, argv, alias_argv=None):
         args = argv
 
     options, args = parser.parse_args(args)
-    opts = {k: v for k, v in options.__dict__.items() if v is not OptionParser.DEFAULT_VALUE}
+    opts = {
+        k: v for k, v in options.__dict__.items() if v is not OptionParser.DEFAULT_VALUE
+    }
     return args, opts
 
 
@@ -627,25 +661,33 @@ def _match_argform(cmd, takes_args, args):
                 argdict[argname + "_list"] = ()
         elif ap[-1] == "+":
             if not args:
-                raise CommandError("command {0!r} needs one or more {1!s}".format(cmd, argname.upper()))
+                raise CommandError(
+                    "command {0!r} needs one or more {1!s}".format(cmd, argname.upper())
+                )
             else:
                 argdict[argname + "_list"] = args[:]
                 args = []
         elif ap[-1] == "$":  # all but one
             if len(args) < 2:
-                raise CommandError("command {0!r} needs one or more {1!s}".format(cmd, argname.upper()))
+                raise CommandError(
+                    "command {0!r} needs one or more {1!s}".format(cmd, argname.upper())
+                )
             argdict[argname + "_list"] = args[:-1]
             args[:-1] = []
         else:
             # just a plain arg
             argname = ap
             if not args:
-                raise CommandError("command {0!r} requires argument {1!s}".format(cmd, argname.upper()))
+                raise CommandError(
+                    "command {0!r} requires argument {1!s}".format(cmd, argname.upper())
+                )
             else:
                 argdict[argname] = args.pop(0)
 
     if args:
-        raise CommandError("extra argument to command {0!r}: {1!s}".format(cmd, args[0]))
+        raise CommandError(
+            "extra argument to command {0!r}: {1!s}".format(cmd, args[0])
+        )
 
     return argdict
 
@@ -655,8 +697,10 @@ def ignore_pipe_err(func):
 
     :param func: Function to decorate.
     """
+
     def ignore_pipe(*args, **kwargs):
         import errno
+
         try:
             result = func(*args, **kwargs)
             sys.stdout.flush()
@@ -671,6 +715,7 @@ def ignore_pipe_err(func):
                 raise
         except KeyboardInterrupt:
             pass
+
     return ignore_pipe
 
 
@@ -767,13 +812,25 @@ class CLI:
         else:
             conffile = "/etc/{0!s}.conf".format(toolname)
 
-        return CLI(name=toolname, config_file=conffile, config_env_var=envvar,
-                   commands=modname, **param)
+        return CLI(
+            name=toolname,
+            config_file=conffile,
+            config_env_var=envvar,
+            commands=modname,
+            **param
+        )
 
     from_tool_name = staticmethod(from_tool_name)
 
-    def __init__(self, name=None, config_file=None, config_env_var=None,
-                 commands=None, *arg, **param):
+    def __init__(
+        self,
+        name=None,
+        config_file=None,
+        config_env_var=None,
+        commands=None,
+        *arg,
+        **param
+    ):
         """Create a new command line interface controller.
 
         :param name: Tool name. If not given, the base name of
@@ -805,8 +862,7 @@ class CLI:
         self.add_command(cmd_help, **param)
 
     def add_command(self, command, **param):
-        """Adds a single command to the command registry.
-        """
+        """Adds a single command to the command registry."""
         assert issubclass(command, Command)
         self.add_commands((command,), **param)
 
@@ -837,8 +893,7 @@ class CLI:
         :param hidden: Whether to include hidden commands in the output.
         :param indent: Indent each line with the given amount of spaces.
         """
-        cmdnames = [n for n, c in self._registry.items()
-                    if c.hidden == hidden]
+        cmdnames = [n for n, c in self._registry.items() if c.hidden == hidden]
 
         if not cmdnames:
             return ""
@@ -862,7 +917,9 @@ class CLI:
             else:
                 firstline = ""
 
-            result.append("{0!s}{1!s:{2}}  {3!s}\n".format(indent, name, max_name, firstline))
+            result.append(
+                "{0!s}{1!s:{2}}  {3!s}\n".format(indent, name, max_name, firstline)
+            )
 
         return "".join(result)
 
@@ -873,7 +930,9 @@ class CLI:
             ``hidden-commands`` strings.
         """
         if topic == "help":
-            text = _cli_top_level_help_text.format(self.name, self._output_help_commands(indent=3))
+            text = _cli_top_level_help_text.format(
+                self.name, self._output_help_commands(indent=3)
+            )
         elif topic == "commands":
             text = self._output_help_commands()
         elif topic == "hidden-commands":
@@ -928,9 +987,10 @@ class CLI:
             used.
         """
         if argv is None:
-            argv = [item.decode("utf-8")
-                    if isinstance(item, bytes) else item
-                    for item in sys.argv[1:]]
+            argv = [
+                item.decode("utf-8") if isinstance(item, bytes) else item
+                for item in sys.argv[1:]
+            ]
 
         try:
             cmd = argv and argv.pop(0) or "help"
@@ -958,6 +1018,7 @@ def main(toolname=None, argv=None, **kw):
     if toolname is None:
         if argv is None:
             from pathlib import Path
+
             toolname = Path(sys.argv[0]).name
             argv = sys.argv[1:]
         else:

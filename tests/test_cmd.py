@@ -10,25 +10,30 @@
 Test suite for the cmdcmd.cmd module.
 """
 
-from cmdcmd import cmd
 from inspect import isclass
+
 from pytest import raises
+
+from cmdcmd import cmd
 
 
 class cmd_foo(cmd.Command):
     """Does foo."""
+
     def run(self):
         return 0
 
 
 class cmd_bar(cmd.Command):
     """Does bar."""
+
     def run(self):
         return 0
 
 
 class cmd_spam(cmd.Command):
     """Does spam, has an alias."""
+
     aliases = ("eggs",)
 
     def run(self):
@@ -36,7 +41,6 @@ class cmd_spam(cmd.Command):
 
 
 class TestCmdCommand:
-
     def assertIsCommand(self, command, cmdclass=None):
         assert not isclass(command)
         assert isinstance(command, cmd.Command)
