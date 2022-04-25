@@ -49,8 +49,9 @@ def lint(session):
 def test(session):
     """Run unit tests, produce coverage data."""
     session.notify("report")
-    session.install("coverage[toml]", "pytest", ".")
-    session.run("coverage", "run", "-m", "pytest", "-vv", *session.posargs)
+    session.install("coverage[toml]", "pytest", "xdoctest", "pygments", ".")
+    session.run("coverage", "run", "-m", "pytest", "--xdoctest", "-vv",
+                *session.posargs)
 
 
 @nox.session(python=py_default)
