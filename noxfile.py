@@ -5,7 +5,7 @@ from itertools import product
 from pathlib import Path
 
 py_default = "3.10"
-py_envs = (py_default, "3.5")
+py_envs = (py_default, "3.6")
 
 nox.options.error_on_external_run = True
 nox.options.sessions = (
@@ -16,7 +16,7 @@ nox.options.sessions = (
 @nox.session(python=py_default)
 def clean(session):
     session.notify("test")
-    session.install("coverage[toml]")
+    session.install("coverage[toml]<6.3")
     session.run("coverage", "erase")
 
 
@@ -49,14 +49,14 @@ def lint(session):
 def test(session):
     """Run unit tests, produce coverage data."""
     session.notify("report")
-    session.install("coverage[toml]", "pytest", "xdoctest", "pygments", ".")
+    session.install("coverage[toml]<6.3", "pytest", "xdoctest", "pygments", ".")
     session.run("coverage", "run", "-m", "pytest", "--xdoctest", "-vv",
                 *session.posargs)
 
 
 @nox.session(python=py_default)
 def report(session):
-    session.install("coverage[toml]")
+    session.install("coverage[toml]<6.3")
     session.run("coverage", "combine", "--append")
     session.run("coverage", "report")
 
