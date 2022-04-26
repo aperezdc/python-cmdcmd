@@ -1,12 +1,8 @@
 cmdcmd
 ======
 
-.. .. image:: https://readthedocs.org/projects/hipack-python/badge/?version=latest
-..    :target: https://hipack-python.readthedocs.io/en/latest
-..    :alt: Documentation Status
-
-.. image:: https://img.shields.io/travis/aperezdc/python-cmdcmd.svg?style=flat
-   :target: https://travis-ci.org/aperezdc/python-cmdcmd
+.. image:: https://github.com/aperezdc/python-cmdcmd/actions/workflows/ci.yml/badge.svg
+   :target: https://github.com/aperezdc/python-cmdcmd/actions/workflows/ci.yml
    :alt: Build Status
 
 .. image:: https://img.shields.io/coveralls/aperezdc/python-cmdcmd/master.svg?style=flat
