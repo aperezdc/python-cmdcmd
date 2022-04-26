@@ -30,3 +30,10 @@ noqa-require-code = true
 pycodestyle = ["+*", "-E203", "-E501", "-E722", "-W503"]
 pyflakes = ["+*"]
 "flake8-*" = ["+*"]
+
+[tool.towncrier]
+name = "cmdcmd"
+package = "cmdcmd"
+package_dir = "src"
+filename = "NEWS.rst"
+directory = "changes"
