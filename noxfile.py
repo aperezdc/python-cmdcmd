@@ -6,7 +6,7 @@ from pathlib import Path
 import nox
 
 py_default = "3.10"
-py_envs = (py_default, "3.6")
+py_envs = (py_default, "3.11", "3.6")
 
 nox.options.error_on_external_run = True
 nox.options.sessions = (
@@ -19,7 +19,7 @@ nox.options.sessions = (
 @nox.session(python=py_default)
 def clean(session):
     session.notify("test")
-    session.install("coverage[toml]<6.3")
+    session.install("coverage[toml]")
     session.run("coverage", "erase")
 
 
@@ -62,8 +62,12 @@ def black(session):
 @nox.session(python=py_envs)
 def test(session):
     """Run unit tests, produce coverage data."""
-    session.notify("report")
-    session.install("coverage[toml]<6.3", "pytest", "xdoctest", "pygments", ".")
+    if session.python == py_default:
+        session.notify("report")
+    coverage_version = "<6.3" if session.python == "3.6" else ""
+    session.install(
+        "coverage[toml]" + coverage_version, "pytest", "xdoctest", "pygments", "."
+    )
     session.run(
         "coverage", "run", "-m", "pytest", "--xdoctest", "-vv", *session.posargs
     )
@@ -71,7 +75,7 @@ def test(session):
 
 @nox.session(python=py_default)
 def report(session):
-    session.install("coverage[toml]<6.3")
+    session.install("coverage[toml]")
     session.run("coverage", "combine", "--append")
     session.run("coverage", "report")
 
