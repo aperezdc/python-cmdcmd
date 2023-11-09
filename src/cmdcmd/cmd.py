@@ -402,8 +402,8 @@ class Command:
 
         :return: Path to configuration file, or ``None``.
         """
-        env_var = self.param.get("cmd:config_env_var", None)
-        cfgfile = self.param.get("cmd:config_file", None)
+        env_var = self.param.get("cmd:config_env_var")
+        cfgfile = self.param.get("cmd:config_file")
 
         if env_var and (env_var in os.environ):
             cfgfile = os.environ[env_var]
@@ -953,7 +953,7 @@ class CLI:
         """
         assert self._registry
 
-        command = self._registry.get(name, None)
+        command = self._registry.get(name)
         if command:
             return command(**command.__cmd_param__)
         elif alias:
